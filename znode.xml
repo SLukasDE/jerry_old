@@ -1,0 +1,76 @@
+<!-- kurz gesagt:
+     - es werden 3 globale session IDs definiert (mincoc, calc1 und calc2), die nachfolgende den Plugins bekannt sind
+     - nun wird einfach das calc-plugin geladen. Dies ist eine Anwendung und kennt calc1 - d.h. es registriert sich an calc1
+     - zuletzt wird das web-plugin geladen und definiert verschiedene Sessions mit IDs, an die sich das Plugin registriert, sofern
+       die ID global existiert. Zusätzlich enthalten die Session-Definitionen sog. Konstruktor-Direktiven, die besagen bei
+       welcher URL eine mögliche Applikation geladen wird und unter welcher URL sie nachfolgend dargestellt wird (redirect).
+     Beim Aufruf einer Konstruktor-URL erzeugt das Web-Plugin eine Session und führt die Konstruktoren von den Plugins aus,
+     die sich an der globalen Session-ID registriert haben. -->
+<znode>
+	<!-- definition of bunch ids that can be used to create a session later. Each plugin is allowed to register itself to such a bunch.
+	     If there is a session created then we need to create a plugin session to each registered plugin that has been registered for this
+	     These are just names that must be
+	     linked to plugins later -->
+	<session_type name="mincoc"/>
+	<session_type name="calc1"/>
+	<session_type name="calc2"/>
+	
+	<plugin library="calculator/libzncalc.so">
+		<plugin_calculator>
+		</plugin_calculator>
+	</plugin>
+	
+	<plugin library="web/libznweb.so">
+		<!-- here we define some ports that the plugin must listen -->
+		<server port="8080"/>
+		<server port="2001"/>
+		
+		<!-- here we link the global accassable part (without session ID) -->
+		<session>
+			<!-- here we define a directory that can be accessed without session -->
+			<plugin_web_files directory="/var/znode/public"/>
+			<plugin_web_files prefix="images" directory="/var/znode/ZNStuff"/>
+			<!-- redirects wären für die "default-session" hilfreich -->
+			<!-- rights-management (Session-Detection) wären in Bezug auf die "default-session" hilfreich -->
+		</session>
+		
+		<!-- here we link the default session accassable part (from any session ID) -->
+		<session name="base">
+			<!-- here we define a directory that can be accessed without session -->
+			<plugin_web_files directory="/home/lukas/Dokumente/Web/public2"/>
+		</session>
+		
+		<!-- here we link a url to a global session ID -->
+		<session name="mincoc" extends="base">
+			<constructor url="mincoc" host="127.0.0.1"/>
+			<!-- alternative, if not requested at 127.0.0.1 -->
+			<constructor url="mincoc" host="*"/>
+		</session>
+		
+		<session name="calc1" extends="base">
+			<constructor url="admin1" host="127.0.0.1:2001"/>
+			<constructor url="admin1" host="192.168.2.128:2001" session_prefix="192.168.2.128:2001"/>
+			<constructor url="admin1" host="wischmop.halifax.rwth-aachen.de:2001" session_prefix="wischmop.halifax.rwth-aachen.de:2001"/>
+		</session>
+		
+		<session name="calc2" extends="base">
+			<constructor url="admin2" host="127.0.0.1:2001" session_prefix="www.heise.de"/>
+			<constructor url="admin2" host="192.168.2.128:2001" session_prefix="www.heise.de"/>
+			<constructor url="admin2" host="wischmop.halifax.rwth-aachen.de:2001"/>
+		</session>
+		
+		<mime_map file_ext="bmp" mime_type="image/bmp"/>
+		<mime_map file_ext="jp2" mime_type="image/jpeg2000"/>
+		<mime_map file_ext="j2k" mime_type="image/jpeg2000"/>
+		<mime_map file_ext="jpg" mime_type="image/jpg"/>
+		<mime_map file_ext="jpeg" mime_type="image/jpg"/>
+		<mime_map file_ext="gif" mime_type="image/gif"/>
+		<mime_map file_ext="png" mime_type="image/png"/>
+		<mime_map file_ext="tif" mime_type="image/tiff"/>
+		<mime_map file_ext="tiff" mime_type="image/tiff"/>
+		<mime_map file_ext="svg" mime_type="image/svg+xml"/>
+		<mime_map file_ext="swf" mime_type="image/swf"/>
+		<mime_map file_ext="wmf" mime_type="image/wmf"/>
+		
+	</plugin>
+</znode>
